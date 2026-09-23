@@ -1,0 +1,32 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: virtualization-web
+    environment:
+      SERVER_PORT: 9000
+      SPRING_DATA_MONGODB_URI: mongodb://db:27017/workshop
+    ports:
+      - "8087:9000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mongo:8
+    container_name: virtualization-db
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mongodb:
+  mongodb_config:
